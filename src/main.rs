@@ -7,33 +7,36 @@ fn make_board() -> [[[i32; 10]; 10]; 10] {
     board
 }
 
-// Places a rocket with only one node
-fn place_node_rocket(game_board: &mut [[[i32; 10]; 10]; 10]) {
+// Get the origin the ship should be placed at
+fn get_orgin(rocket: &mut rockets::Rocket) {
 
     println!("Enter cords for single node rocket (x y z): ");
 
     let mut position: String = String::new();
     std::io::stdin().read_line(&mut position).unwrap();
+
+    // Remove new line and return carage
     position.pop();
     position.pop();
 
     let cords = position.split(" ").collect::<Vec<&str>>();
-    println!("{:?}",cords);
     let x = cords[0].parse::<usize>().unwrap();
     let y = cords[1].parse::<usize>().unwrap();
     let z = cords[2].parse::<usize>().unwrap();
 
-    game_board[x][y][z] = 1;
+    rocket.origin = (x, y, z);
 
 }
 
-// Place two node rocket
-fn place_rocket(game_board: &mut [[[i32; 10]; 10]; 10]) {
+// Gets the direction the ship should be placed in
+fn get_direction(rocket: &mut rockets::Rocket) {
 
-    println!("Enter cords for two node rocket(x+1) (x y z): ");
+    println!("Enter direction for rocket (x y z): ");
 
     let mut position: String = String::new();
     std::io::stdin().read_line(&mut position).unwrap();
+
+    // Remove new line and return carage
     position.pop();
     position.pop();
 
@@ -42,19 +45,45 @@ fn place_rocket(game_board: &mut [[[i32; 10]; 10]; 10]) {
     let y = cords[1].parse::<usize>().unwrap();
     let z = cords[2].parse::<usize>().unwrap();
 
-    let rocket = rockets::Rocket {x: x, y: y, z: z};
-    let second_node = rocket.next();
+    rocket.direction = Some((x, y, z));
 
-    game_board[x][y][z] = 1;
-    game_board[second_node.0][second_node.1][second_node.2] = 1;
+}
+
+// Places rocket on game board
+fn place_rocket(game_board: &mut [[[i32; 10]; 10]; 10], rocket: &mut rockets::Rocket) {
+
+    rocket.calculate_nodes();
+
+    for node in &rocket.nodes {
+
+        game_board[node.0][node.1][node.2] = 1;
+
+    }
+
+}
+
+// Create and place rocket
+fn create_rocket(game_board: &mut [[[i32; 10]; 10]; 10], size: i32) {
+
+    let mut rocket = rockets::Rocket::new(0, 0, 0, size);
+    get_orgin(&mut rocket);
+
+    if size > 1 {
+
+        get_direction(&mut rocket);
+
+    }
+    
+    place_rocket(game_board, &mut rocket);
 
 }
 
 // Place rockets on board
 fn place_rockets(game_board: &mut [[[i32; 10]; 10]; 10]) {
     
-    place_node_rocket(game_board);
-    place_rocket(game_board);
+    create_rocket(game_board, 1);
+    create_rocket(game_board, 2);
+    create_rocket(game_board, 3);
 
 }
 
